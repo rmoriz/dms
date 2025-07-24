@@ -74,9 +74,6 @@ Changelog = "https://github.com/rmoriz/dms/blob/main/CHANGELOG.md"
 [project.scripts]
 dms = "dms.cli.main:cli_main"
 
-[tool.setuptools]
-packages = {find = {}}
-
 [tool.setuptools.packages.find]
 include = ["dms*"]
 exclude = ["tests*"]

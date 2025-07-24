@@ -16,10 +16,10 @@ class ModelNotAvailableError(LLMAPIError):
     
     def __init__(self, model: str):
         super().__init__(
-            f"Model '{model}' is not available",
-            model=model,
-            recovery_suggestion="Try a different model or check OpenRouter model availability."
+            f"Model '{model}' not found",
+            model=model
         )
+        self.recovery_suggestion = "Try a different model or check OpenRouter model availability."
 
 
 class LLMProvider:
@@ -90,10 +90,7 @@ class LLMProvider:
         
         # All models failed
         self.logger.error(f"All {len(models_to_try)} models failed")
-        raise LLMAPIError(
-            f"All models failed. Last error: {last_error}",
-            recovery_suggestion="Check your API key, internet connection, and try again later."
-        )
+        raise LLMAPIError(f"All models failed. Last error: {last_error}")
     
     @handle_api_errors
     def _make_chat_request(self, messages: List[Dict[str, str]], model: str) -> str:

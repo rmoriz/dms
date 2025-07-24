@@ -471,7 +471,7 @@ def handle_import_directory(args):
             # Use non-recursive glob pattern
             pdf_files = list(directory_path.glob(args.pattern))
         
-        # Filter to only PDF files and sort
+        # Filter to only PDF files and sort - use case-insensitive matching
         pdf_files = [f for f in pdf_files if f.suffix.lower() == '.pdf' and f.is_file()]
         pdf_files.sort()
         
