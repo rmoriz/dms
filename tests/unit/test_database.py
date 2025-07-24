@@ -9,7 +9,7 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 from dms.storage.database import DatabaseManager, DatabaseSchema
-from dms.config import DMSConfig, OpenRouterConfig, EmbeddingConfig, OCRConfig
+from dms.config import DMSConfig, OpenRouterConfig, EmbeddingConfig, OCRConfig, LoggingConfig
 
 
 @pytest.fixture
@@ -20,6 +20,7 @@ def temp_config():
             openrouter=OpenRouterConfig(api_key="test-key"),
             embedding=EmbeddingConfig(),
             ocr=OCRConfig(),
+            logging=LoggingConfig(),
             data_dir=temp_dir
         )
         yield config

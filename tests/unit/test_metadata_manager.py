@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 
 from dms.storage.metadata_manager import MetadataManager
 from dms.models import DocumentContent, CategoryResult
-from dms.config import DMSConfig, OpenRouterConfig, EmbeddingConfig, OCRConfig
+from dms.config import DMSConfig, OpenRouterConfig, EmbeddingConfig, OCRConfig, LoggingConfig
 
 
 @pytest.fixture
@@ -20,6 +20,7 @@ def temp_config():
             openrouter=OpenRouterConfig(api_key="test-key"),
             embedding=EmbeddingConfig(),
             ocr=OCRConfig(),
+            logging=LoggingConfig(),
             data_dir=temp_dir
         )
         yield config
