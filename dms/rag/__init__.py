@@ -1,1 +1,1 @@
-"""RAG (Retrieval-Augmented Generation) module for query processing"""
+"""RAG (Retrieval-Augmented Generation) module for DMS"""

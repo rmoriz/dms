@@ -1,1 +1,1 @@
-"""Storage module for vector database and metadata management"""
+"""Storage module for DMS"""
