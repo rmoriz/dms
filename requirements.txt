@@ -1,13 +1,22 @@
-# Core dependencies
+# Core dependencies for DMS
+# CLI framework
 typer[all]==0.9.0
+
+# PDF processing
 pdfplumber==0.10.3
 pytesseract==0.3.10
 pdf2image==1.17.0
 Pillow==11.3.0
+
+# Vector database and embeddings
 chromadb==0.4.18
 sentence-transformers==2.7.0
+
+# LLM integration
 openai==1.3.7
 requests==2.31.0
+
+# Configuration and utilities
 python-dotenv==1.0.0
 numpy<2.0.0
 

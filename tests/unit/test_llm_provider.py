@@ -4,7 +4,8 @@ import pytest
 import json
 from unittest.mock import Mock, patch, MagicMock
 from requests.exceptions import RequestException, HTTPError, Timeout
-from dms.llm.provider import LLMProvider, LLMError, ModelNotAvailableError
+from dms.llm.provider import LLMProvider, ModelNotAvailableError
+from dms.errors import LLMAPIError, TransientAPIError
 from dms.config import OpenRouterConfig
 
 
@@ -106,7 +107,7 @@ class TestLLMProvider:
         
         messages = [{"role": "user", "content": "Test question"}]
         
-        with pytest.raises(LLMError, match="All models failed"):
+        with pytest.raises(LLMAPIError, match="All models failed"):
             provider.chat_completion(messages, "invalid-model")
     
     @patch('requests.Session.post')
@@ -116,7 +117,7 @@ class TestLLMProvider:
         
         messages = [{"role": "user", "content": "Test question"}]
         
-        with pytest.raises(LLMError, match="Request timed out"):
+        with pytest.raises(LLMAPIError, match="Request timed out"):
             provider.chat_completion(messages, "anthropic/claude-3-sonnet")
     
     @patch('requests.Session.get')
@@ -145,7 +146,7 @@ class TestLLMProvider:
         """Test model listing failure"""
         mock_get.side_effect = RequestException("Network error")
         
-        with pytest.raises(LLMError, match="Failed to fetch available models"):
+        with pytest.raises(LLMAPIError, match="Failed to fetch available models"):
             provider.list_available_models()
     
     @patch('requests.Session.get')

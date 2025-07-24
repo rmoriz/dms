@@ -24,11 +24,21 @@ class TestImportWorkflow:
     @pytest.fixture
     def mock_config(self, temp_dir):
         """Create mock configuration"""
-        config = MagicMock()
-        config.chunk_size = 1000
-        config.chunk_overlap = 200
-        config.data_path = temp_dir / "data"
-        config.data_path.mkdir(exist_ok=True)
+        from dms.config import DMSConfig, OpenRouterConfig, EmbeddingConfig, OCRConfig, LoggingConfig
+        
+        # Create a real config object with test paths
+        config = DMSConfig(
+            openrouter=OpenRouterConfig(api_key="test-key"),
+            embedding=EmbeddingConfig(),
+            ocr=OCRConfig(),
+            logging=LoggingConfig(),
+            data_dir=str(temp_dir / "data"),
+            chunk_size=1000,
+            chunk_overlap=200
+        )
+        
+        # Ensure data directory exists
+        config.data_path.mkdir(parents=True, exist_ok=True)
         return config
     
     def test_import_directory_empty(self, temp_dir, mock_config, capsys):

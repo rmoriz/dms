@@ -3,7 +3,8 @@
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from dms.rag.engine import RAGEngine
-from dms.llm.provider import LLMProvider, LLMError
+from dms.llm.provider import LLMProvider
+from dms.errors import LLMAPIError
 from dms.storage.vector_store import VectorStore
 from dms.models import SearchResult, TextChunk, Source, RAGResponse
 from dms.config import DMSConfig, OpenRouterConfig
@@ -140,7 +141,7 @@ class TestRAGEngine:
     def test_query_llm_error(self, rag_engine, mock_vector_store, mock_llm_provider, sample_search_results):
         """Test RAG query when LLM fails"""
         mock_vector_store.similarity_search.return_value = sample_search_results
-        mock_llm_provider.chat_completion.side_effect = LLMError("API error")
+        mock_llm_provider.chat_completion.side_effect = LLMAPIError("API error")
         
         result = rag_engine.query("Test question")
         

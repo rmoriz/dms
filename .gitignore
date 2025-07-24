@@ -58,8 +58,13 @@ Thumbs.db
 # DMS specific
 ~/.dms/
 *.sqlite
-chroma.db
+*.sqlite3
+chroma.db/
+chroma/
 logs/
+
+# Test artifacts and mock directories
+<MagicMock*
 
 # Temporary files
 *.tmp

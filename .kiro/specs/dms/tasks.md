@@ -107,20 +107,22 @@
     - Write integration tests for import workflows
     - _Requirements: 1.1, 1.2, 1.5_
 
-  - [ ] 7.3 Implement query commands
-    - Implement the actual query functionality in handle_query function
-    - Connect RAGEngine to CLI query command with proper filtering
-    - Add date range filtering using metadata manager
-    - Format output with source citations and confidence scores
-    - Write tests for various query scenarios
+  - [x] 7.3 Implement query commands
+    - Replace stub in handle_query function with actual RAGEngine integration
+    - Initialize RAGEngine with VectorStore and LLMProvider
+    - Implement date range filtering by converting CLI args to metadata filters
+    - Format RAGResponse output with source citations and confidence scores
+    - Add error handling for LLM API failures and empty results
+    - Write tests for query command with various filter combinations
     - _Requirements: 2.1, 2.2, 2.3, 6.1, 6.4_
 
-  - [ ] 7.4 Implement management commands
-    - Implement handle_list function to show imported documents using MetadataManager
-    - Implement handle_delete function for removing documents and vector data
-    - Implement handle_categories function to show auto-detected categories
-    - Implement handle_models_* functions for LLM management using LLMProvider
-    - Write tests for all management operations
+  - [x] 7.4 Implement management commands
+    - Replace stub in handle_list function with MetadataManager.list_documents integration
+    - Replace stub in handle_delete function with MetadataManager and VectorStore deletion
+    - Replace stub in handle_categories function with MetadataManager.get_categories_summary
+    - Replace stubs in handle_models_* functions with LLMProvider integration
+    - Add confirmation prompts for destructive operations (delete)
+    - Write tests for all management command implementations
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 7.5, 7.6_
 
 - [x] 8. Create SQLite metadata storage
@@ -155,15 +157,15 @@
     - Write tests for error scenarios and recovery
     - _Requirements: 1.4, 1.5, 2.3_
 
-- [ ] 10. Create comprehensive test suite
-  - [ ] 10.1 Set up test infrastructure
+- [x] 10. Create comprehensive test suite
+  - [x] 10.1 Set up test infrastructure
     - Create test data with sample PDFs of different types
     - Set up pytest configuration with fixtures and mocks
     - Implement test database and vector store isolation
     - Create performance benchmarking tests
     - _Requirements: All requirements validation_
 
-  - [ ] 10.2 Write integration tests
+  - [x] 10.2 Write integration tests
     - Create end-to-end tests for complete import-to-query workflows
     - Test directory structure preservation and filtering
     - Validate categorization accuracy with known documents
@@ -171,15 +173,15 @@
     - Write tests for CLI command combinations and edge cases
     - _Requirements: All requirements validation_
 
-- [ ] 11. Add documentation and packaging
-  - [ ] 11.1 Create user documentation
+- [x] 11. Add documentation and packaging
+  - [x] 11.1 Create user documentation
     - Write README with installation and usage instructions
     - Create CLI help documentation and examples
     - Add configuration guide for OpenRouter setup
     - Document troubleshooting common issues
     - _Requirements: 5.1_
 
-  - [ ] 11.2 Package for distribution
+  - [x] 11.2 Package for distribution
     - Create setup.py/pyproject.toml for pip installation
     - Ensure requirements.txt is complete with all dependencies
     - Create installation script for system dependencies (Tesseract)

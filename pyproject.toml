@@ -1,0 +1,177 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dms"
+version = "0.1.0"
+description = "Document Management System - RAG-powered PDF search and query tool"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "DMS Team", email = "dms@example.com"}
+]
+maintainers = [
+    {name = "DMS Team", email = "dms@example.com"}
+]
+keywords = ["pdf", "document", "search", "rag", "ai", "nlp", "ocr", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Office Suites",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Indexing",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "typer[all]==0.9.0",
+    "pdfplumber==0.10.3",
+    "pytesseract==0.3.10",
+    "pdf2image==1.17.0",
+    "Pillow==11.3.0",
+    "chromadb==0.4.18",
+    "sentence-transformers==2.7.0",
+    "openai==1.3.7",
+    "requests==2.31.0",
+    "python-dotenv==1.0.0",
+    "numpy<2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==7.4.3",
+    "pytest-cov==4.1.0",
+    "pytest-mock==3.12.0",
+    "black==23.11.0",
+    "flake8==6.1.0",
+    "mypy==1.7.1",
+    "pre-commit==3.5.0",
+]
+test = [
+    "pytest>=7.4.3",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/rmoriz/dms"
+Documentation = "https://github.com/rmoriz/dms#readme"
+Repository = "https://github.com/rmoriz/dms"
+"Bug Reports" = "https://github.com/rmoriz/dms/issues"
+Changelog = "https://github.com/rmoriz/dms/blob/main/CHANGELOG.md"
+
+[project.scripts]
+dms = "dms.cli.main:cli_main"
+
+[tool.setuptools]
+packages = {find = {}}
+
+[tool.setuptools.packages.find]
+include = ["dms*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+dms = ["py.typed"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["dms"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "setup.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "chromadb.*",
+    "sentence_transformers.*",
+    "pdfplumber.*",
+    "pytesseract.*",
+    "pdf2image.*",
+]
+ignore_missing_imports = true
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".eggs",
+    "*.egg-info",
+    ".venv",
+    ".tox",
+]

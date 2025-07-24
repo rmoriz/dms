@@ -35,10 +35,7 @@ class LLMProvider:
             LLMAPIError: If API key is missing or invalid
         """
         if not config.api_key:
-            raise LLMAPIError(
-                "OpenRouter API key is required",
-                recovery_suggestion="Set your API key in configuration or OPENROUTER_API_KEY environment variable."
-            )
+            raise LLMAPIError("OpenRouter API key is required")
         
         self.config = config
         self.logger = get_logger(f"{__name__}.LLMProvider")

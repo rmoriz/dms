@@ -1,7 +1,8 @@
 """RAG Engine for query processing and answer generation"""
 
 from typing import List, Dict, Any, Optional
-from dms.llm.provider import LLMProvider, LLMError
+from dms.llm.provider import LLMProvider
+from dms.errors import LLMAPIError
 from dms.storage.vector_store import VectorStore
 from dms.models import SearchResult, Source, RAGResponse
 from dms.config import DMSConfig
@@ -67,7 +68,7 @@ class RAGEngine:
                 search_results_count=len(search_results)
             )
             
-        except LLMError as e:
+        except LLMAPIError as e:
             # Return sources even if LLM fails
             return RAGResponse(
                 answer=f"Es gab einen Fehler bei der Antwortgenerierung: {e}. "

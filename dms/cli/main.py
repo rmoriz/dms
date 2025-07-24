@@ -589,101 +589,625 @@ def handle_import_directory(args):
 
 def handle_query(args):
     """Handle query command"""
-    print(f"🤔 Question: {args.question}")
+    from dms.storage.vector_store import VectorStore
+    from dms.storage.metadata_manager import MetadataManager
+    from dms.llm.provider import LLMProvider
+    from dms.rag.engine import RAGEngine
+    from dms.errors import LLMAPIError
+    from datetime import datetime
     
-    if args.model:
-        print(f"🤖 Using model: {args.model}")
-    
-    if args.category:
-        print(f"📂 Category: {args.category}")
-    
-    if args.directory:
-        print(f"📁 Directory: {args.directory}")
-    
-    if args.date_from or args.date_to:
-        date_range = f"{args.date_from or 'start'} to {args.date_to or 'end'}"
-        print(f"📅 Date range: {date_range}")
-    
-    print(f"📊 Limit: {args.limit}")
-    
-    if args.verbose:
-        print("🔍 Verbose mode enabled")
-    
-    # Implementation will be added in task 7.3
-    print("⚠️  Query functionality not yet implemented")
+    try:
+        # Load configuration
+        config = DMSConfig.load()
+        
+        print(f"🤔 Question: {args.question}")
+        
+        if args.model:
+            print(f"🤖 Using model: {args.model}")
+        
+        if args.category:
+            print(f"📂 Category filter: {args.category}")
+        
+        if args.directory:
+            print(f"📁 Directory filter: {args.directory}")
+        
+        if args.date_from or args.date_to:
+            date_range = f"{args.date_from or 'start'} to {args.date_to or 'end'}"
+            print(f"📅 Date range: {date_range}")
+        
+        print(f"📊 Result limit: {args.limit}")
+        
+        if args.verbose:
+            print("🔍 Verbose mode enabled")
+        
+        # Initialize components
+        print("🔄 Initializing search components...")
+        vector_store = VectorStore(str(config.data_path / "chroma.db"))
+        metadata_manager = MetadataManager(config)
+        llm_provider = LLMProvider(config.openrouter)
+        rag_engine = RAGEngine(vector_store, llm_provider, config)
+        
+        # Build filters from CLI arguments
+        filters = {}
+        
+        if args.category:
+            filters["category"] = args.category
+        
+        if args.directory:
+            filters["directory_structure"] = args.directory
+        
+        # Handle date filtering
+        if args.date_from or args.date_to:
+            # Convert date strings to metadata filters
+            if args.date_from:
+                try:
+                    from_date = datetime.strptime(args.date_from, "%Y-%m-%d")
+                    filters["date_from"] = from_date
+                except ValueError:
+                    print(f"❌ Invalid date format for --from: {args.date_from}. Use YYYY-MM-DD format.", file=sys.stderr)
+                    sys.exit(1)
+            
+            if args.date_to:
+                try:
+                    to_date = datetime.strptime(args.date_to, "%Y-%m-%d")
+                    filters["date_to"] = to_date
+                except ValueError:
+                    print(f"❌ Invalid date format for --to: {args.date_to}. Use YYYY-MM-DD format.", file=sys.stderr)
+                    sys.exit(1)
+        
+        # Perform RAG query
+        print("🔍 Searching documents...")
+        try:
+            rag_response = rag_engine.query(
+                question=args.question,
+                filters=filters,
+                model=args.model
+            )
+        except LLMAPIError as e:
+            print(f"❌ LLM API error: {e}", file=sys.stderr)
+            print("💡 Try again later or check your API configuration.", file=sys.stderr)
+            sys.exit(1)
+        
+        # Display results
+        if rag_response.search_results_count == 0:
+            print("📭 No relevant documents found for your question.")
+            print("💡 Try rephrasing your question or check if relevant documents have been imported.")
+            return
+        
+        print(f"\n✅ Found {rag_response.search_results_count} relevant document(s)")
+        print(f"🎯 Confidence: {rag_response.confidence:.2f}")
+        
+        print(f"\n💬 Answer:")
+        print(f"{rag_response.answer}")
+        
+        # Show sources
+        if rag_response.sources:
+            print(f"\n📚 Sources:")
+            for i, source in enumerate(rag_response.sources[:args.limit], 1):
+                print(f"  {i}. {source.document_path} (Page {source.page_number})")
+                if args.verbose:
+                    print(f"     Relevance: {source.relevance_score:.3f}")
+                    print(f"     Content preview: {source.chunk_content[:100]}...")
+                    print()
+        
+        if args.verbose:
+            print(f"\n🔍 Search Details:")
+            print(f"   Total sources found: {len(rag_response.sources)}")
+            print(f"   Answer confidence: {rag_response.confidence:.3f}")
+            if filters:
+                print(f"   Applied filters: {filters}")
+        
+    except KeyboardInterrupt:
+        print("\n❌ Query cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Unexpected error during query: {e}", file=sys.stderr)
+        if args.verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
 
 
 def handle_list(args):
     """Handle list command"""
-    print("📋 Listing documents...")
+    from dms.storage.metadata_manager import MetadataManager
+    from datetime import datetime
     
-    if args.category:
-        print(f"📂 Category: {args.category}")
-    
-    if args.directory:
-        print(f"📁 Directory: {args.directory}")
-    
-    print(f"📊 Limit: {args.limit}")
-    
-    if args.details:
-        print("📄 Detailed view enabled")
-    
-    # Implementation will be added in task 7.4
-    print("⚠️  List functionality not yet implemented")
+    try:
+        # Load configuration
+        config = DMSConfig.load()
+        
+        print("📋 Listing documents...")
+        
+        if args.category:
+            print(f"📂 Category filter: {args.category}")
+        
+        if args.directory:
+            print(f"📁 Directory filter: {args.directory}")
+        
+        print(f"📊 Limit: {args.limit}")
+        
+        if args.details:
+            print("📄 Detailed view enabled")
+        
+        # Initialize metadata manager
+        metadata_manager = MetadataManager(config)
+        
+        # Build filters
+        filters = {}
+        if args.category:
+            filters['category'] = args.category
+        if args.directory:
+            filters['directory_structure'] = args.directory
+        
+        # Get documents
+        documents = metadata_manager.list_documents(
+            filters=filters,
+            limit=args.limit,
+            include_deleted=False
+        )
+        
+        if not documents:
+            print("📭 No documents found matching the criteria.")
+            return
+        
+        print(f"\n📄 Found {len(documents)} document(s):")
+        print("=" * 80)
+        
+        for i, doc in enumerate(documents, 1):
+            # Basic info
+            file_name = doc['file_name']
+            category = doc.get('category', 'Unknown')
+            pages = doc['page_count']
+            size_mb = doc['file_size'] / (1024 * 1024)
+            
+            print(f"{i:3d}. {file_name}")
+            print(f"     📂 Category: {category}")
+            print(f"     📁 Path: {doc['directory_structure']}")
+            print(f"     📄 Pages: {pages} | 💾 Size: {size_mb:.1f} MB")
+            
+            if args.details:
+                # Additional details
+                import_date = datetime.fromisoformat(doc['import_date']).strftime("%Y-%m-%d %H:%M")
+                processing_time = doc.get('processing_time', 0)
+                ocr_used = doc.get('ocr_used', False)
+                confidence = doc.get('confidence', 0)
+                
+                print(f"     📅 Imported: {import_date}")
+                print(f"     ⏱️  Processing: {processing_time:.2f}s")
+                print(f"     👁️  OCR: {'Yes' if ocr_used else 'No'}")
+                print(f"     🎯 Confidence: {confidence:.2f}")
+                
+                # Show entities if available
+                entities = doc.get('entities')
+                if entities:
+                    entities_str = ', '.join(f"{k}: {v}" for k, v in entities.items())
+                    print(f"     🔍 Entities: {entities_str}")
+            
+            print()
+        
+        # Summary statistics
+        total_size = sum(doc['file_size'] for doc in documents) / (1024 * 1024)
+        total_pages = sum(doc['page_count'] for doc in documents)
+        
+        print("=" * 80)
+        print(f"📊 Summary: {len(documents)} documents, {total_pages} pages, {total_size:.1f} MB total")
+        
+        # Category breakdown
+        categories = {}
+        for doc in documents:
+            cat = doc.get('category', 'Unknown')
+            categories[cat] = categories.get(cat, 0) + 1
+        
+        if len(categories) > 1:
+            print("📂 Categories:", ', '.join(f"{cat}: {count}" for cat, count in categories.items()))
+        
+    except KeyboardInterrupt:
+        print("\n❌ List operation cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error listing documents: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 def handle_delete(args):
     """Handle delete command"""
+    from dms.storage.metadata_manager import MetadataManager
+    from dms.storage.vector_store import VectorStore
+    
     if not any([args.path, args.category, args.all]):
         print("❌ Must specify --path, --category, or --all", file=sys.stderr)
         sys.exit(1)
     
-    if args.all:
-        print("🗑️  Deleting all documents...")
-    elif args.path:
-        print(f"🗑️  Deleting documents at path: {args.path}")
-    elif args.category:
-        print(f"🗑️  Deleting documents in category: {args.category}")
-    
-    if args.force:
-        print("⚡ Force mode enabled (skipping confirmations)")
-    
-    # Implementation will be added in task 7.4
-    print("⚠️  Delete functionality not yet implemented")
+    try:
+        # Load configuration
+        config = DMSConfig.load()
+        
+        # Initialize components
+        metadata_manager = MetadataManager(config)
+        vector_store = VectorStore(str(config.data_path / "chroma.db"))
+        
+        # Determine what to delete
+        documents_to_delete = []
+        
+        if args.all:
+            print("🗑️  Preparing to delete ALL documents...")
+            documents_to_delete = metadata_manager.list_documents(include_deleted=False)
+            
+        elif args.path:
+            print(f"🗑️  Preparing to delete documents at path: {args.path}")
+            # Find documents matching the path (can be file or directory)
+            all_docs = metadata_manager.list_documents(include_deleted=False)
+            for doc in all_docs:
+                if args.path in doc['file_path'] or args.path in doc['directory_structure']:
+                    documents_to_delete.append(doc)
+                    
+        elif args.category:
+            print(f"🗑️  Preparing to delete documents in category: {args.category}")
+            documents_to_delete = metadata_manager.list_documents(
+                filters={'category': args.category},
+                include_deleted=False
+            )
+        
+        if not documents_to_delete:
+            print("📭 No documents found matching the deletion criteria.")
+            return
+        
+        # Show what will be deleted
+        print(f"\n⚠️  Found {len(documents_to_delete)} document(s) to delete:")
+        for i, doc in enumerate(documents_to_delete[:10], 1):  # Show first 10
+            print(f"  {i}. {doc['file_name']} ({doc.get('category', 'Unknown')})")
+        
+        if len(documents_to_delete) > 10:
+            print(f"  ... and {len(documents_to_delete) - 10} more documents")
+        
+        # Confirmation (unless force mode)
+        if not args.force:
+            print(f"\n🚨 This will permanently delete {len(documents_to_delete)} document(s) and all associated data!")
+            response = input("Are you sure you want to continue? (type 'yes' to confirm): ")
+            if response.lower() != 'yes':
+                print("❌ Deletion cancelled")
+                return
+        else:
+            print("⚡ Force mode enabled - skipping confirmation")
+        
+        # Perform deletion
+        print(f"\n🗑️  Deleting {len(documents_to_delete)} document(s)...")
+        
+        deleted_count = 0
+        failed_count = 0
+        
+        for doc in documents_to_delete:
+            try:
+                doc_id = doc['id']
+                file_path = doc['file_path']
+                
+                # Delete from vector store first
+                vector_store.delete_documents(file_path)
+                
+                # Delete from metadata database (hard delete)
+                success = metadata_manager.delete_document(doc_id, hard_delete=True)
+                
+                if success:
+                    deleted_count += 1
+                    print(f"  ✅ Deleted: {doc['file_name']}")
+                else:
+                    failed_count += 1
+                    print(f"  ❌ Failed to delete: {doc['file_name']}")
+                    
+            except Exception as e:
+                failed_count += 1
+                print(f"  ❌ Error deleting {doc['file_name']}: {e}")
+        
+        # Summary
+        print(f"\n📊 Deletion Summary:")
+        print(f"  ✅ Successfully deleted: {deleted_count}")
+        if failed_count > 0:
+            print(f"  ❌ Failed to delete: {failed_count}")
+        
+        if failed_count > 0:
+            print(f"\n⚠️  Some deletions failed. Check the error messages above.")
+            sys.exit(1)
+        else:
+            print(f"\n🎉 All documents deleted successfully!")
+        
+    except KeyboardInterrupt:
+        print("\n❌ Delete operation cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error during deletion: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 def handle_categories(args):
     """Handle categories command"""
-    print("📂 Document categories:")
-    if args.count:
-        print("📊 Document counts will be shown")
-    # Implementation will be added in task 7.4
-    print("⚠️  Categories functionality not yet implemented")
+    from dms.storage.metadata_manager import MetadataManager
+    
+    try:
+        # Load configuration
+        config = DMSConfig.load()
+        
+        print("📂 Document categories:")
+        
+        # Initialize metadata manager
+        metadata_manager = MetadataManager(config)
+        
+        # Get categories summary
+        categories_summary = metadata_manager.get_categories_summary()
+        
+        if not categories_summary:
+            print("📭 No categories found. Import some documents first.")
+            return
+        
+        # Sort categories by count (descending) then by name
+        sorted_categories = sorted(
+            categories_summary.items(),
+            key=lambda x: (-x[1], x[0])
+        )
+        
+        print()
+        total_docs = 0
+        
+        for category, count in sorted_categories:
+            total_docs += count
+            if args.count:
+                print(f"  📁 {category}: {count} document(s)")
+            else:
+                print(f"  📁 {category}")
+        
+        if args.count:
+            print(f"\n📊 Total: {len(sorted_categories)} categories, {total_docs} documents")
+        
+        # Show directory structure breakdown if available
+        directory_structure = metadata_manager.get_directory_structure()
+        if directory_structure and len(directory_structure) > 1:
+            print(f"\n📁 Directory Structure:")
+            sorted_dirs = sorted(directory_structure.items())
+            for directory, count in sorted_dirs:
+                if directory:  # Skip empty directory names
+                    print(f"  📂 {directory}: {count} document(s)")
+        
+    except KeyboardInterrupt:
+        print("\n❌ Categories operation cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error retrieving categories: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 def handle_models_list(args):
     """Handle models-list command"""
-    print("🤖 Available models:")
-    # Implementation will be added in task 7.4
-    print("⚠️  Models list functionality not yet implemented")
+    from dms.llm.provider import LLMProvider
+    from dms.errors import LLMAPIError
+    
+    try:
+        # Load configuration
+        config = DMSConfig.load()
+        
+        print("🤖 Available models:")
+        
+        # Initialize LLM provider
+        llm_provider = LLMProvider(config.openrouter)
+        
+        # Get available models
+        try:
+            models = llm_provider.list_available_models()
+        except LLMAPIError as e:
+            print(f"❌ Failed to fetch models: {e}", file=sys.stderr)
+            print("💡 Check your API key and internet connection.", file=sys.stderr)
+            sys.exit(1)
+        
+        if not models:
+            print("📭 No models available.")
+            return
+        
+        # Show current configuration
+        print(f"\n⚙️  Current Configuration:")
+        print(f"  Default model: {config.openrouter.default_model}")
+        print(f"  Fallback models: {', '.join(config.openrouter.fallback_models)}")
+        
+        # Group models by provider
+        model_groups = {}
+        for model in models:
+            if '/' in model:
+                provider = model.split('/')[0]
+                model_name = model.split('/', 1)[1]
+            else:
+                provider = 'Other'
+                model_name = model
+            
+            if provider not in model_groups:
+                model_groups[provider] = []
+            model_groups[provider].append((model, model_name))
+        
+        print(f"\n📋 Available Models ({len(models)} total):")
+        
+        # Sort providers
+        for provider in sorted(model_groups.keys()):
+            print(f"\n  🏢 {provider.title()}:")
+            
+            # Sort models within provider
+            for full_model, display_name in sorted(model_groups[provider], key=lambda x: x[1]):
+                # Mark current default
+                marker = " ⭐" if full_model == config.openrouter.default_model else ""
+                # Mark fallback models
+                if full_model in config.openrouter.fallback_models:
+                    marker += " 🔄"
+                
+                print(f"    • {display_name}{marker}")
+        
+        print(f"\n💡 Legend:")
+        print(f"  ⭐ Current default model")
+        print(f"  🔄 Configured fallback model")
+        
+    except KeyboardInterrupt:
+        print("\n❌ Models list operation cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error listing models: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 def handle_models_set(args):
     """Handle models-set command"""
-    print(f"🤖 Setting default model to: {args.model}")
-    # Implementation will be added in task 7.4
-    print("⚠️  Set model functionality not yet implemented")
+    from dms.llm.provider import LLMProvider
+    from dms.errors import LLMAPIError
+    
+    try:
+        # Load configuration
+        config = DMSConfig.load()
+        
+        print(f"🤖 Setting default model to: {args.model}")
+        
+        # Initialize LLM provider to validate model
+        llm_provider = LLMProvider(config.openrouter)
+        
+        # Validate that the model exists
+        try:
+            available_models = llm_provider.list_available_models()
+            if args.model not in available_models:
+                print(f"❌ Model '{args.model}' is not available.", file=sys.stderr)
+                print(f"💡 Use 'dms models-list' to see available models.", file=sys.stderr)
+                sys.exit(1)
+        except LLMAPIError as e:
+            print(f"⚠️  Warning: Could not validate model availability: {e}")
+            print(f"🔄 Proceeding anyway...")
+        
+        # Update configuration
+        old_model = config.openrouter.default_model
+        config.openrouter.default_model = args.model
+        
+        # Validate and save configuration
+        try:
+            config.validate_and_raise()
+            config.save()
+        except Exception as e:
+            print(f"❌ Failed to save configuration: {e}", file=sys.stderr)
+            sys.exit(1)
+        
+        print(f"✅ Default model updated successfully!")
+        print(f"   Previous: {old_model}")
+        print(f"   New: {args.model}")
+        print(f"💾 Configuration saved")
+        
+        # Test the new model
+        print(f"\n🧪 Testing new model...")
+        try:
+            test_messages = [{"role": "user", "content": "Hello, this is a test."}]
+            response = llm_provider.chat_completion(test_messages, args.model)
+            print(f"✅ Model test successful!")
+            if len(response) > 100:
+                print(f"📝 Response preview: {response[:100]}...")
+            else:
+                print(f"📝 Response: {response}")
+        except LLMAPIError as e:
+            print(f"⚠️  Warning: Model test failed: {e}")
+            print(f"💡 The model was set but may not be working correctly.")
+        
+    except KeyboardInterrupt:
+        print("\n❌ Set model operation cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error setting model: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 def handle_models_test(args):
     """Handle models-test command"""
-    if args.model:
-        print(f"🧪 Testing model: {args.model}")
-    else:
-        print("🧪 Testing all configured models...")
+    from dms.llm.provider import LLMProvider
+    from dms.errors import LLMAPIError
     
-    # Implementation will be added in task 7.4
-    print("⚠️  Test models functionality not yet implemented")
+    try:
+        # Load configuration
+        config = DMSConfig.load()
+        
+        # Initialize LLM provider
+        llm_provider = LLMProvider(config.openrouter)
+        
+        # Determine which models to test
+        models_to_test = []
+        if args.model:
+            print(f"🧪 Testing specific model: {args.model}")
+            models_to_test = [args.model]
+        else:
+            print("🧪 Testing all configured models...")
+            models_to_test = [config.openrouter.default_model] + config.openrouter.fallback_models
+            # Remove duplicates while preserving order
+            seen = set()
+            models_to_test = [m for m in models_to_test if not (m in seen or seen.add(m))]
+        
+        print(f"📋 Models to test: {', '.join(models_to_test)}")
+        
+        # Test each model
+        test_message = [{"role": "user", "content": "Hello! Please respond with 'Test successful' to confirm you're working."}]
+        
+        results = {}
+        
+        for i, model in enumerate(models_to_test, 1):
+            print(f"\n[{i}/{len(models_to_test)}] Testing {model}...")
+            
+            try:
+                response = llm_provider.chat_completion(test_message, model)
+                results[model] = {
+                    'status': 'success',
+                    'response': response,
+                    'error': None
+                }
+                print(f"  ✅ Success!")
+                if len(response) > 80:
+                    print(f"  📝 Response: {response[:80]}...")
+                else:
+                    print(f"  📝 Response: {response}")
+                    
+            except LLMAPIError as e:
+                results[model] = {
+                    'status': 'failed',
+                    'response': None,
+                    'error': str(e)
+                }
+                print(f"  ❌ Failed: {e}")
+            except Exception as e:
+                results[model] = {
+                    'status': 'error',
+                    'response': None,
+                    'error': str(e)
+                }
+                print(f"  💥 Error: {e}")
+        
+        # Summary
+        print(f"\n📊 Test Summary:")
+        successful = sum(1 for r in results.values() if r['status'] == 'success')
+        failed = len(results) - successful
+        
+        print(f"  ✅ Successful: {successful}/{len(results)}")
+        if failed > 0:
+            print(f"  ❌ Failed: {failed}/{len(results)}")
+        
+        # Show failed models
+        failed_models = [model for model, result in results.items() if result['status'] != 'success']
+        if failed_models:
+            print(f"\n❌ Failed Models:")
+            for model in failed_models:
+                error = results[model]['error']
+                print(f"  • {model}: {error}")
+            
+            print(f"\n💡 Suggestions:")
+            print(f"  - Check your OpenRouter API key")
+            print(f"  - Verify your internet connection")
+            print(f"  - Some models may be temporarily unavailable")
+            print(f"  - Use 'dms models-list' to see currently available models")
+        
+        if failed > 0:
+            sys.exit(1)
+        else:
+            print(f"\n🎉 All models are working correctly!")
+        
+    except KeyboardInterrupt:
+        print("\n❌ Model test operation cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error testing models: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 def main():
