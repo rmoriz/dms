@@ -87,6 +87,7 @@ def test_dms_installation():
         return True
     except ImportError as e:
         print(f"❌ Failed to import DMS: {e}")
+        print("   Install with: pip install dms-rag")
         return False
 
 

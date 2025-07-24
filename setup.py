@@ -51,7 +51,7 @@ def get_version():
 requirements, dev_requirements = read_requirements()
 
 setup(
-    name="dms",
+    name="dms-rag",
     version=get_version(),
     description="Document Management System - RAG-powered PDF search and query tool",
     long_description=read_readme(),

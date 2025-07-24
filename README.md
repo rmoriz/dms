@@ -41,7 +41,7 @@ A RAG (Retrieval-Augmented Generation) powered PDF search and query tool that ma
 
 2. **Install DMS:**
    ```bash
-   pip install dms
+   pip install dms-rag
    ```
 
 3. **Initialize DMS:**
@@ -98,7 +98,7 @@ Using a virtual environment is strongly recommended to avoid conflicts with othe
    pip install --upgrade pip
    
    # Install DMS
-   pip install dms
+   pip install dms-rag
    ```
 
 3. **Verify installation:**
@@ -124,7 +124,7 @@ Using a virtual environment is strongly recommended to avoid conflicts with othe
 
 2. **Install DMS:**
    ```bash
-   pip install dms
+   pip install dms-rag
    ```
 
 3. **Verify installation:**
@@ -151,7 +151,7 @@ Using a virtual environment is strongly recommended to avoid conflicts with othe
 3. **Install DMS:**
    ```bash
    pip install --upgrade pip
-   pip install dms
+   pip install dms-rag
    ```
 
 #### Virtual Environment Best Practices

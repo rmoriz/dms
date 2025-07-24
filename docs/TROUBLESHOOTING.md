@@ -27,9 +27,9 @@ python --version
 python3 --version
 
 # Install with correct Python version
-python3.9 -m pip install dms
+python3.9 -m pip install dms-rag
 # or
-python3.11 -m pip install dms
+python3.11 -m pip install dms-rag
 
 # Verify installation
 which dms
@@ -52,7 +52,7 @@ dms-env\Scripts\activate  # Windows
 pip install --upgrade pip
 
 # Install DMS
-pip install dms
+pip install dms-rag
 
 # Verify installation
 dms --help
@@ -637,7 +637,7 @@ grep -A 5 -B 5 "specific error" ~/.dms/logs/dms.log
 python --version
 
 # Check DMS installation
-pip show dms
+pip show dms-rag
 
 # Check system resources
 df -h ~/.dms  # Disk space
@@ -676,13 +676,13 @@ If all else fails, perform a clean reinstall:
 cp -r ~/.dms ~/.dms-backup
 
 # Uninstall DMS
-pip uninstall dms
+pip uninstall dms-rag
 
 # Remove data directory
 rm -rf ~/.dms
 
 # Reinstall DMS
-pip install dms
+pip install dms-rag
 
 # Reinitialize
 dms init --api-key sk-or-your-key
@@ -727,7 +727,7 @@ tail -f ~/.dms/logs/dms.log
 # Check system requirements
 python --version  # Should be 3.9+
 tesseract --version
-pip list | grep -E "(dms|torch|transformers|chromadb)"
+pip list | grep -E "(dms-rag|torch|transformers|chromadb)"
 
 # Check data directory
 ls -la ~/.dms/

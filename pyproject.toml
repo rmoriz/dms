@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dms"
+name = "dms-rag"
 version = "0.1.0"
 description = "Document Management System - RAG-powered PDF search and query tool"
 readme = "README.md"
